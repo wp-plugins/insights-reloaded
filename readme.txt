@@ -1,4 +1,4 @@
-=== Insights ===
+=== Insights Reloaded ===
 Contributors: ramoonus
 Donate link: http://www.ramoonus.nl/
 Tags:  admin, posts, images, links, google, ajax, jquery, youtube, video, play, media, Post, posts
