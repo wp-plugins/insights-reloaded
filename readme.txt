@@ -4,7 +4,7 @@ Donate link: http://www.ramoonus.nl/
 Tags:  admin, posts, images, links, google, ajax, jquery, youtube, video, play, media, Post, posts
 Requires at least: 3.0.0
 Tested up to: 3.0.6
-Stable tag: 0.1
+Stable tag: 0.2
 
 Insights allows you to quickly access and insert information (links, images, videos, maps..) into your blog posts.
 
@@ -22,7 +22,7 @@ Insights performs following functions in real-time:
 * Google Book Search
 * Insert a Google Map
 
-Check the [screenshots] for more examples of usage.
+Check the screenshots for examples of usage.
 
 Insights allows you to do all this using dynamic AJAX interface which loads the relevant information to your post in just a few seconds.
 
@@ -30,6 +30,10 @@ Original plugin by <a href="http://wordpress.org/extend/plugins/insights/">Vladi
 Updated by <a href="http://www.ramoonus.nl/">Ramoonus</a>.
 
 == Changelog ==
+= 0.2 =
+* Documented the PHP for myself
+* Readme fixes
+
 = 0.1 = 
 * Initial version based on Insights 1.0.4 by 
 

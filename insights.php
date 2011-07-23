@@ -1,27 +1,29 @@
 <?php
-// pluginname Insights for WordPress
-// shortname WPInsights
-// dashname insights
 /*
 Plugin Name: Insights Reloaded
-Version: 0.1
+Version: 0.2
 Plugin URI: http://www.ramoonus.nl/wordpress/insights-reloaded/
-Author: Vladimir Prelovac
+Author: Ramoonus
 Author URI: http://www.ramoonus.nl/
 Description: Insights allows you to quickly search and insert information (links, images, videos, maps, news..) into your blog posts.
 */
-global $wp_version;	
 
-$exit_msg='Insights for WordPress requires WordPress 3.0 or newer. <a href="http://codex.wordpress.org/Upgrading_WordPress">Please update!</a>';
+// pluginname Insights for WordPress
+// shortname WPInsights
+// dashname insights
+
+
+// check if version requirements are made
+// 0.1: <3.0
+global $wp_version;	
 if (version_compare($wp_version,"3.0","<"))
 {
+	$exit_msg='Insights for WordPress requires WordPress 3.0 or newer. <a href="http://codex.wordpress.org/Upgrading_WordPress">Please update!</a>';
 	exit ($exit_msg);
 }
 
-
 // Avoid name collisions.
 if ( !class_exists('WPInsights') ) :
-
 class WPInsights {
 	
 	// Name for our options in the DB
@@ -41,28 +43,28 @@ class WPInsights {
 		add_action('admin_print_scripts-post-new.php',  array(&$this, 'scripts_action'));
 		add_action('admin_print_scripts-page-new.php',  array(&$this, 'scripts_action'));
 		
-	  
+	  	// tinymce
 		//add_action( 'init', array( &$this, 'add_tinymce' ));
 
 	}
-
+// TinyMCE
 function add_tinymce() {
-	if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) )
-		return;
-
+	// if user cannot edit posts, do nothing
+	if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) 
+			return;
+	// If user can edit posts, add tinymce button
 	if ( get_user_option('rich_editing') == 'true' ) {
 
 		add_filter( 'mce_external_plugins', array( &$this, 'add_tinymce_plugin' ) );
 		add_filter( 'mce_buttons', array( &$this, 'add_tinymce_button' ));
 	}
 }
-
-
+// TinyMCE button
 function add_tinymce_button( $buttons ) {
 	array_push( $buttons, "separator", 'btnInsights' );
 	return $buttons;
 }
-
+// TinyMCE plugin javascript
 function add_tinymce_plugin( $plugin_array ) {
 	$plugin_array['insights'] = $this->plugin_url. '/insights-mceplugin.js';
 	return $plugin_array;
@@ -84,59 +86,20 @@ function scripts_action()
 		wp_enqueue_script('insights', $this->plugin_url.'/js/insights.js', array('jquery'));
 		wp_localize_script('insights', 'InsightsSettings', array('insights_url' => $this->plugin_url, 'insights_interactive' => $interactive, 'insights_maps_api' => $google_maps_api_key, 'nonce' => $nonce)); 
 		  
-		   					 	
+		// Gmap with jQuery.jCache
+		// dropped in 0.2  					 	
 		if ($options['gmaps'])
 		 	wp_enqueue_script('insights-maps', $this->plugin_url.'/js/insights-maps.js'); 			  
-		wp_enqueue_script('jQuery.jCache', $this->plugin_url.'/js/jQuery.jCache.js'); 
-
-						
+		wp_enqueue_script('jQuery.jCache', $this->plugin_url.'/js/jQuery.jCache.js'); 					
 }
 
-
-
-
-	function draw_insights() {
-		$options=$this->get_options();
-	?>
-
-<p>Enter keywords you would like to search for and press Search button.</p>
-<input type="text" id="insights-search" name="insights-search" size="60" autocomplete="off" />
-<input id="insights-submit" class="button" type="button" value="Search"  />
-<br />
-<input name="insights-radio" type="radio" checked="checked" value="1" />
-<label> My Blog </label>
-<input name="insights-radio" type="radio" value="2"/>
-<label> Images </label>
-<input name="insights-radio" type="radio" value="3"/>
-<label> Videos </label>
-<input name="insights-radio" type="radio" value="4"/>
-<label> Wikipedia </label>
-<input name="insights-radio" type="radio" value="6"/>
-<label> Google </label>
-<input name="insights-radio" type="radio" value="7"/>
-<label> News </label>
-<input name="insights-radio" type="radio" value="10"/>
-<label> Blogs </label>
-<input name="insights-radio" type="radio" value="11"/>
-<label> Books</label>
-<?php
-if ($options['gmaps'])
-	echo '<input name="insights-radio" type="radio" value="5"/><label> Maps </label>';
-
-?>
-<div id="insights-map-all" style="display:none" >
-  <p>
-    <input class="button" type="button" value="Add Map" onclick="insert_map();" />
-    <input class="button" type="button" value="Add Marker" onclick="createMarkerAt();" />
-    <input class="button" type="button" value="Clear Markers" onclick="clearMarkers();" />
-    <input class="button" type="button" value="Clear Path" onclick="clearPolys();" />
-  </p>
-  <div id="insights-map" style="height:450px; width:100%; padding:0px; margin:0px;"></div>
-</div>
-<?php			
-			
-	}
-
+// Insights shown when writing posts
+// external in 0.2
+function draw_insights() {
+	$options=$this->get_options();
+	include('insights-editor.php');
+}
+	
 	// Hook the options mage
 	function admin_menu() {
 	
@@ -175,6 +138,7 @@ if ($options['gmaps'])
 	}
 
 	// Set up everything
+	// Install
 	function install() {
 		$this->get_options();		
 		
@@ -191,7 +155,6 @@ if ($options['gmaps'])
 			
 			$options = array();
 		
-			
 			$options['post_results']=(int) $_POST['post_results'];					
 			$options['image_results']=(int) $_POST['image_results'];	
 			$options['wiki_results']=(int) $_POST['wiki_results'];		
@@ -203,7 +166,6 @@ if ($options['gmaps'])
 			$options['gmaps']=$_POST['gmaps'];		
 			$options['maps_api']=$_POST['maps_api'];
 			
-		
 			update_option($this->DB_option, $options);
 			echo '<div class="updated fade"><p>Plugin settings saved.</p></div>';
 		}
@@ -224,23 +186,18 @@ if ($options['gmaps'])
 		$imgpath=$this->plugin_url.'/img';	
 
 		
-		include('insights-options.php');
-	
-		
+		include('insights-options.php');		
 	}
-	
 	
 
 }
-
 endif; 
 
+// Install hook if class doesnt exists
 if ( class_exists('WPInsights') ) :
-	
 	$WPInsights = new WPInsights();
 	if (isset($WPInsights)) {
 		register_activation_hook( __FILE__, array(&$WPInsights, 'install') );
 	}
 endif;
-
 ?>

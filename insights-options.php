@@ -35,16 +35,13 @@
           <input type="checkbox" name="interactive"  <?php echo $interactive ?> />
           <label for="interactive"> Show results as you type</label>
           <br />
-          <br />
           <h2>Google Maps</h2>
           <br />
           <input type="checkbox" name="gmaps"  <?php echo $gmaps ?> />
           <label for="gmaps"> Turn on Google Maps module</label>
           <br />
-          <br />
           Enter your Google Maps API key. You can get it free <a href="http://code.google.com/apis/maps/signup.html">here</a>.<br/>
           <input type="text" name="maps_api" size="100" value="<?php echo $maps_api ?>"/>
-          <br />
           <br />
           <div class="submit">
             <input type="submit" name="Submit" value="Update" />
