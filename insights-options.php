@@ -1,7 +1,7 @@
 <div class="wrap" >
   <h2>Insights</h2>
   <div id="poststuff" style="margin-top:10px;">
-    <div id="mainblock" style="width:710px">
+    <div id="mainblock">
       <div class="dbx-content">
         <form action="<?php echo $action_url ?>" method="post">
           <input type="hidden" name="submitted" value="1" />
