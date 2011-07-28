@@ -2,9 +2,9 @@
 Contributors: ramoonus
 Donate link: http://www.ramoonus.nl/
 Tags:  admin, posts, images, links, google, ajax, jquery, youtube, video, play, media, Post, posts
-Requires at least: 3.0.0
-Tested up to: 3.0.6
-Stable tag: 0.2
+Requires at least: 3.1.0
+Tested up to: 3.2.1
+Stable tag: 0.3.1
 
 Insights allows you to quickly access and insert information (links, images, videos, maps..) into your blog posts.
 
@@ -30,6 +30,13 @@ Original plugin by <a href="http://wordpress.org/extend/plugins/insights/">Vladi
 Updated by <a href="http://www.ramoonus.nl/">Ramoonus</a>.
 
 == Changelog ==
+= 0.3.1 =
+* Optimized JS (TidyUp)
+* Redocumented the PHP
+
+= 0.3 = 
+* Reverted to stable branch
+
 = 0.2 =
 * Documented the PHP for myself
 * Readme fixes

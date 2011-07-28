@@ -1,15 +1,14 @@
 <?php
-// Load WordPress as requirements
-//require_once('../../../wp-load.php'); // but not this file
-require_once('../../../wp-config.php');
+// load requirement - WP
+  require_once('../../../wp-config.php');
   
-// On Search
+// if ?search= defined
   if ($_GET['search']) {
-  	  // 
-  	  check_ajax_referer('insights-nonce'); 
-	  // wordpress function http://codex.wordpress.org/Function_Reference/check_ajax_referer
-	  // check_ajax_referer( $action, $query_arg, $die )
   	  
+	  // and when it comes from insights
+  	  check_ajax_referer('insights-nonce');
+  	  
+	  // sorting things out
   	 	if ($_GET['mode'] == '6') // mode 6 is google search
           die(search_google($_GET['search']));
       if ($_GET['mode'] == '5') // mode 5 is map search
@@ -25,13 +24,13 @@ require_once('../../../wp-config.php');
   } else
       die('No results found.');
   
+  
   // get the content excerpt
   function get_excerpt($text, $length = 25)
   {
-	  // if except is empty, return the full text
-	  if (!$length)
-	            return $text;
-      // else
+      if (!$length)
+          return $text;
+      
       $text = strip_tags($text);
       $words = explode(' ', $text, $length + 1);
       if (count($words) > $length) {
@@ -42,7 +41,7 @@ require_once('../../../wp-config.php');
       return $text;
   }
   
-// search posts
+  // search posts
   function search_posts($search)
   {
       global $wpdb, $WPInsights;
@@ -54,7 +53,6 @@ require_once('../../../wp-config.php');
       $search = $wpdb->escape($search);
       $posts = $wpdb->get_results("SELECT ID, post_title, post_content, post_type FROM $wpdb->posts WHERE post_status = 'publish' AND (post_title LIKE '%$search%' OR post_content LIKE '%$search%') ORDER BY post_title LIMIT 0,".$limit);
       
-      // 
       if ($posts)
           foreach ($posts as $post) {
               // display every post link and excerpt
@@ -72,7 +70,8 @@ require_once('../../../wp-config.php');
       
       return $output;
   }
-// Search images
+  
+  // Search images
   function search_images($keyword)
   {
   		global $WPInsights;
@@ -99,50 +98,45 @@ require_once('../../../wp-config.php');
     <option value="_b">Large (1024px)</option>
     </select> To add an image select a size and click on image.
     <br />';
-   
+     
           // output image
           if ($tag_images)
               $output .= $tag_images;
           
           if ($text_images)
-              $output .= $text_images;             
+              $output .= $text_images;
+              
       } else
           $output = 'No images matched "' . $keyword . '"';
       
       return $output;
   }
   
-// Search Flickr
+  // Search Flickr
   function search_flickr($keyword, $mode = 'tags', $count = 16, $nonc = 0)
   {
-  		// currently fixed to else
+  		// check license
   		if ($nonc)
   			$license="4,6,7";
   		else
   			$license="2,3,4,6,7";  			
   			
       // prepare Flickr query
-      $params = array('api_key' => '72c75157d9ef89547c5a7b85748106e4', 
-	  					'method' => 'flickr.photos.search', 
-						'format' => 'php_serial', 
-						'tag_mode' => 'any', 
-						'per_page' => $count, 
-						'sort' => 'interestingness-desc', 
-						$mode => $keyword, 
-						'license' => $license);
-	  // todo: replace API_key
+      $params = array('api_key' => '72c75157d9ef89547c5a7b85748106e4', 'method' => 'flickr.photos.search', 'format' => 'php_serial', 'tag_mode' => 'any', 'per_page' => $count, 'sort' => 'interestingness-desc', $mode => $keyword, 'license' => $license);
       
-	  // url encode
       $encoded_params = array();
       foreach ($params as $k => $v) {
           // encode parameters    
           $encoded_params[] = urlencode($k) . '=' . urlencode($v);
       }
       
-      // call the Flickr API  - REST
+      // call the Flickr API  
       $url = "http://api.flickr.com/services/rest/?" . implode('&', $encoded_params);
+      
+    
       $rsp = wp_remote_fopen($url);
      
+      
       // decode the response
       $rsp_obj = unserialize($rsp);
       
@@ -156,34 +150,34 @@ require_once('../../../wp-config.php');
               $src = 'http://farm' . $photo['farm'] . '.static.flickr.com/' . $photo['server'] . '/' . $photo['id'] . '_' . $photo['secret'];
               
               // create output      
-              $output .= '<img hspace="2" vspace="2" src="' . $src . '_s.jpg" title="' . $photo['title'] . '" onclick="insert_image(\'' . $link . '\', \'' . $src . '\', \'' . str_replace("'", "&acute;", $photo['title']) . '\');" />';     
+              $output .= '<img hspace="2" vspace="2" src="' . $src . '_s.jpg" title="' . $photo['title'] . '" onclick="insert_image(\'' . $link . '\', \'' . $src . '\', \'' . str_replace("'", "&acute;", $photo['title']) . '\');" />';       
+            
           }
-      }    
+      }
       return $output;
   }
- 
-// Search videos
+
+// Search videos (youtube) 
   function search_videos($keyword)
   {
   		global $WPInsights;
   		
   		$options=$WPInsights->get_options();
- 			
-		// youtube url	
+ 		
+		// init	
   		$url='http://gdata.youtube.com/feeds/api/videos?vq='.urlencode($keyword).'&format=1&max-results='.$options['video_results'];	
   		$rsp = wp_remote_fopen($url);
   		
-  		
+  		//parser
 		$xml_parser = xml_parser_create();
-	  xml_parse_into_struct($xml_parser, $rsp, $vals, $index); 
+	    xml_parse_into_struct($xml_parser, $rsp, $vals, $index); 
 		xml_parser_free($xml_parser);
 
-		// xml debug
+		// debug
 			//print_r($vals);
-			//print_r($index);
-		
-		// video width and height
-		// replace with oembed in future	
+			//print_r($index);			
+	
+		// height and width
 		$width=425;	
 		$height= 344;	
 		$disp_rel=0;
@@ -217,7 +211,6 @@ require_once('../../../wp-config.php');
 			return $preview.'<div style="clear:both">'.$out.'</div>';
 		}
 			else return 'No videos found';
-		
   }
   
 // Search Wikipedia
@@ -227,13 +220,14 @@ require_once('../../../wp-config.php');
   		
  			$options=$WPInsights->get_options();
  			
-		// wikipedia API 			
+		// init	 			
   		$url='http://en.wikipedia.org/w/api.php?action=query&list=search&srwhat=text&srlimit='.$options['wiki_results'].'&format=php&srsearch='.urlencode($keyword);
-  		  		$rsp = wp_remote_fopen($url);
-            // decode the response
+  		$rsp = wp_remote_fopen($url);
+      
+      // decode the response
       $rsp_obj = unserialize($rsp);
       
-      // If response
+      
        if ($rsp_obj) {
          foreach($rsp_obj['query']['search'] as $item)
               // display every post link and excerpt
@@ -244,8 +238,7 @@ require_once('../../../wp-config.php');
         </a></p>';
          } else
           $output .= 'Nothing found matching "' . stripslashes($keyword) . '"';
-
-      // debug
+      
       //print_r($rsp_obj);
       return $output;
   }

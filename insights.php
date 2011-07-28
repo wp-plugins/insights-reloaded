@@ -1,11 +1,21 @@
 <?php
 /*
 Plugin Name: Insights Reloaded
-Version: 0.2
+Version: 0.3.1
 Plugin URI: http://www.ramoonus.nl/wordpress/insights-reloaded/
 Author: Ramoonus
 Author URI: http://www.ramoonus.nl/
 Description: Insights allows you to quickly search and insert information (links, images, videos, maps, news..) into your blog posts.
+*/
+
+// version checker (for WP)
+/*
+global $wp_version;	
+$exit_msg='Insights for WordPress requires WordPress 2.3 or newer. <a href="http://codex.wordpress.org/Upgrading_WordPress">Please update!</a>';
+if (version_compare($wp_version,"2.3","<"))
+{
+	exit ($exit_msg);
+}
 */
 
 // Avoid name collisions.
@@ -28,8 +38,32 @@ class WPInsights {
 		add_action('admin_print_scripts-page.php',  array(&$this, 'scripts_action'));		
 		add_action('admin_print_scripts-post-new.php',  array(&$this, 'scripts_action'));
 		add_action('admin_print_scripts-page-new.php',  array(&$this, 'scripts_action'));
+		//add_action( 'init', array( &$this, 'add_tinymce' ));
 	}
-		
+// add tinymce functions
+function add_tinymce() {
+	if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) )
+		return;
+
+	if ( get_user_option('rich_editing') == 'true' ) {
+
+		add_filter( 'mce_external_plugins', array( &$this, 'add_tinymce_plugin' ) );
+		add_filter( 'mce_buttons', array( &$this, 'add_tinymce_button' ));
+	}
+}
+// tinyMCE button
+function add_tinymce_button( $buttons ) {
+	array_push( $buttons, "separator", 'btnInsights' );
+	return $buttons;
+}
+// tinyMCE plugin javascript ( Missing!) 
+// to be removed
+function add_tinymce_plugin( $plugin_array ) {
+	$plugin_array['insights'] = $this->plugin_url. '/insights-mceplugin.js';
+	return $plugin_array;
+}
+
+// google maps
 function scripts_action() 
 	{	
 		$options=$this->get_options();
@@ -41,37 +75,63 @@ function scripts_action()
 		
 		if ($options['gmaps'])
 			echo '<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key='.$google_maps_api_key.'" type="text/javascript"></script>';
-		 	
-		wp_enqueue_script('jquery');
-		wp_enqueue_script('insights', $this->plugin_url.'/js/insights.js');					// loads data (search)
-		wp_enqueue_script('insights-parser', $this->plugin_url.'/js/insights-parser.js'); 	// uses data
-		
-		// problem maker //cdata
-		wp_localize_script('insights', 'InsightsSettings', array(
-		'insights_url' => $this->plugin_url, 
-		'insights_interactive' => $interactive, 
-		'insights_maps_api' => $google_maps_api_key, 
-		'nonce' => $nonce)); 
-		  
-		// Gmap with jQuery.jCache
-		// dropped in future					 	
+
+		wp_enqueue_script('jquery');		 	
+		wp_enqueue_script('insights', $this->plugin_url.'/js/insights.js', array("jquery") ); // force jquery to be used BEFORE insights.js
+		wp_localize_script('insights', 'InsightsSettings', array('insights_url' => $this->plugin_url, 'insights_interactive' => $interactive, 'insights_maps_api' => $google_maps_api_key, 'nonce' => $nonce)); 
+		   					 	
 		if ($options['gmaps'])
-		wp_enqueue_script('insights-maps', $this->plugin_url.'/js/insights-maps.js'); 			  
-		wp_enqueue_script('jQuery.jCache', $this->plugin_url.'/js/jQuery.jCache.js'); 					
+		 	wp_enqueue_script('insights-maps', $this->plugin_url.'/js/insights-maps.js'); 	// javascript map parser		  
+		wp_enqueue_script('jQuery.jCache', $this->plugin_url.'/js/jQuery.jCache.js'); 		// jQuery.jCache for map parser
 }
 
-// Insights shown when writing posts
-// external in 0.2
+// draw 
 function draw_insights() {
 	$options=$this->get_options();
-	include('insights-editor.php');
-}
-	
+?>
+
+<p>Enter keywords you would like to search for and press Search button.</p>
+<input type="text" id="insights-search" name="insights-search" size="60" autocomplete="off" />
+<input id="insights-submit" class="button" type="button" value="Search"  />
+<br />
+<input name="insights-radio" type="radio" checked="checked" value="1" />
+<label> My Blog </label>
+<input name="insights-radio" type="radio" value="2"/>
+<label> Images </label>
+<input name="insights-radio" type="radio" value="3"/>
+<label> Videos </label>
+<input name="insights-radio" type="radio" value="4"/>
+<label> Wikipedia </label>
+<input name="insights-radio" type="radio" value="6"/>
+<label> Google </label>
+<input name="insights-radio" type="radio" value="7"/>
+<label> News </label>
+<input name="insights-radio" type="radio" value="10"/>
+<label> Blogs </label>
+<input name="insights-radio" type="radio" value="11"/>
+<label> Books</label>
+<?php
+if ($options['gmaps'])
+	echo '<input name="insights-radio" type="radio" value="5"/><label> Maps </label>';
+?>
+<div id="insights-map-all" style="display:none" >
+  <p>
+    <input class="button" type="button" value="Add Map" onclick="insert_map();" />
+    <input class="button" type="button" value="Add Marker" onclick="createMarkerAt();" />
+    <input class="button" type="button" value="Clear Markers" onclick="clearMarkers();" />
+    <input class="button" type="button" value="Clear Path" onclick="clearPolys();" />
+  </p>
+  <div id="insights-map" style="height:450px; width:100%; padding:0px; margin:0px;"></div>
+</div>
+<?php			
+			
+	}
+
 	// Hook the options mage
 	function admin_menu() {
 		add_options_page('Insights Options', 'Insights', 8, basename(__FILE__), array(&$this, 'handle_options'));
-		add_meta_box( 'WPInsights', 'Insights', array(&$this,'draw_insights'), 'post', 'normal', 'high' ); // on post
-   		add_meta_box( 'WPInsights', 'Insights', array(&$this,'draw_insights'), 'page', 'normal', 'high' ); // on page
+		add_meta_box( 'WPInsights', 'Insights', array(&$this,'draw_insights'), 'post', 'normal', 'high' );
+	    add_meta_box( 'WPInsights', 'Insights', array(&$this,'draw_insights'), 'page', 'normal', 'high' );
 	} 
 	
 	// Handle our options
@@ -103,21 +163,23 @@ function draw_insights() {
 	}
 
 	// Set up everything
-	// Install
 	function install() {
 		$this->get_options();		
 		
 	}
-	
+	// Handle options
 	function handle_options()
 	{
 		$options = $this->get_options();
-		
-		if ( isset($_POST['submitted']) ) { // if its submitted
-			// does it comes from insights?
-			check_admin_referer('insights');
+
+		// when changing options
+		if ( isset($_POST['submitted']) ) {
 			
-			$options = array();		
+			// and it comes from insights
+			check_admin_referer('insights'); 
+			
+			// declare array
+			$options = array(); 
 			$options['post_results']=(int) $_POST['post_results'];					
 			$options['image_results']=(int) $_POST['image_results'];	
 			$options['wiki_results']=(int) $_POST['wiki_results'];		
@@ -129,12 +191,11 @@ function draw_insights() {
 			$options['gmaps']=$_POST['gmaps'];		
 			$options['maps_api']=$_POST['maps_api'];
 			
-			// updated options
+			// when updated
 			update_option($this->DB_option, $options);
 			echo '<div class="updated fade"><p>Plugin settings saved.</p></div>';
 		}
-
-		// where is what option
+		// globals for options
 		$post_results=$options['post_results'];
 		$image_results=$options['image_results'];
 		$wiki_results=$options['wiki_results'];
@@ -146,15 +207,19 @@ function draw_insights() {
 		$gmaps=$options['gmaps']=='on'?'checked':'';
 		$maps_api=$options['maps_api'];
 
+		// path
 		$action_url = $_SERVER['REQUEST_URI'];	
-		$imgpath=$this->plugin_url.'/img';	
-		
-		include('insights-options.php');		
+
+		// image path
+		$imgpath=$this->plugin_url.'/img';
+
+		// include options screen
+		include('insights-options.php');
 	}
 }
 endif; 
 
-// Install hook if class doesnt exists
+// secret
 if ( class_exists('WPInsights') ) :
 	$WPInsights = new WPInsights();
 	if (isset($WPInsights)) {

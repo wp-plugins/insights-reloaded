@@ -1,3 +1,62 @@
+// Insights for WordPress plugin
+
+function send_wp_editor(html) {
+    var win = window.dialogArguments || opener || parent || top;
+    win.send_to_editor(html);
+
+    // alternatively
+    // tinyMCE.execCommand("mceInsertContent", false, html);
+}
+
+function insert_link(html_link) {
+    if ((typeof tinyMCE != "undefined") && (edt = tinyMCE.getInstanceById('content')) && !edt.isHidden()) {
+        var sel = edt.selection.getSel();
+        //sel.toString()
+        if (sel) {
+            var link = '<a href="' + html_link + '" title="' + sel + '">' + sel + '</a>';
+
+            send_wp_editor(link);
+        }
+    }
+    return false;
+}
+
+function insert_image(link, src, title) {
+    var size = document.getElementById('img_size').value;
+    var img = '<a href="' + link + '"><img src="' + src + size + '.jpg" alt="' + title + '" title="' + title + '" hspace="5" border="0" /></a>';
+
+    send_wp_editor(img);
+}
+
+
+var videoid = 0;
+
+function insert_video() {
+    var video = '<object type="application/x-shockwave-flash" width="425" height="344" data="http://www.youtube.com/v/' + videoid + '&amp;rel=0&amp;fs=1"><param name="movie" value="http://www.youtube.com/v/' + videoid + '&amp;rel=0&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="wmode" value="transparent" /></object>';
+
+    send_wp_editor(video);
+}
+
+function insert_map() {
+    var maphtml = '<img src="' + updateImage() + '" alt="" />';
+
+    send_wp_editor(maphtml);
+
+}
+
+function show_video(ytfile, yttitle, ytdesc, ytviews, ytrating) {
+
+    videoid = ytfile;
+    var link = '<span style="padding: 2px"><object type="application/x-shockwave-flash" width="425" height="344" data="http://www.youtube.com/v/' + ytfile + '&amp;rel=0&amp;fs=1"><param name="movie" value="http://www.youtube.com/v/' + ytfile + '&amp;rel=0&amp;fs=1"></param><param name="allowFullScreen" value="true"></param><param name="wmode" value="transparent" /></object></span>';
+    var data = '<h4>' + yttitle + '</h4><p><a href="http://www.youtube.com/watch?v=' + ytfile + '">link</a></p><p>' + ytdesc + '</p><p><strong>Views:</strong> ' + ytviews + '</p><p><strong>Rating: </strong>' + ytrating + '</p>';
+    var button = '<br /><p><input class="button" type="button" value="Add Video" onclick="insert_video();" ></p><p>(you may need to go from Visual to HTML mode and back to see the video object)</p>';
+
+    jQuery('#insights-youtube-preview').html(link);
+    jQuery('#insights-youtube-data').html(data + button);
+    jQuery('#insights-youtube-holder').fadeIn();
+}
+
+
 // setup everything when document is ready
 jQuery(document).ready(function($) {
 
@@ -161,8 +220,14 @@ jQuery(document).ready(function($) {
                 }
             });
         }
+
     }
 
+    // measure time
+    // var startTime=new Date();
+    // search button click event
+    // var endTime=new Date();
+    // var responseTime=(endTime.getTime()-startTime.getTime());
 
     $('#insights-submit').click(function() {
         submit_me();
