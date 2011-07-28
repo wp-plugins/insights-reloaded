@@ -8,9 +8,8 @@ function createMarkerAt() {
     var marker = new GMarker(map.getCenter(), {
         draggable: true
     });
-    GEvent.addListener(marker, 'dragend',
-    function() {
-        
+    GEvent.addListener(marker, 'dragend', function() {
+
     });
     map.addOverlay(marker);
     markers.push(marker);
@@ -21,20 +20,16 @@ function createPolyAt(latlng) {
     map.addOverlay(poly);
     poly.enableDrawing();
     editingNow = true;
-    GEvent.addListener(poly, "mouseover",
-    function() {
+    GEvent.addListener(poly, "mouseover", function() {
         poly.enableEditing();
     });
-    GEvent.addListener(poly, "mouseout",
-    function() {
+    GEvent.addListener(poly, "mouseout", function() {
         poly.disableEditing();
     });
-    GEvent.addListener(poly, "lineupdated",
-    function() {
+    GEvent.addListener(poly, "lineupdated", function() {
 
-});
-    GEvent.addListener(poly, "endline",
-    function() {
+    });
+    GEvent.addListener(poly, "endline", function() {
         editingNow = false;
     });
     polys.push(poly);
@@ -71,7 +66,7 @@ function updateImage() {
         markersArray.push(markers[i].getLatLng().lat().toFixed(6) + "," + markers[i].getLatLng().lng().toFixed(6) + "," + markerParams);
     }
 
-    //	 markersArray.push(marker.getLatLng().lat().toFixed(6) + "," + marker.getLatLng().lng().toFixed(6) + "," + markerParams);
+    //     markersArray.push(marker.getLatLng().lat().toFixed(6) + "," + marker.getLatLng().lng().toFixed(6) + "," + markerParams);
     if (markersArray.length) params.push("markers=" + markersArray.join("|"));
 
     var polyColor = '0000FF';
@@ -90,9 +85,9 @@ function updateImage() {
     params.push("zoom=" + map.getZoom());
     params.push("size=" + 480 + "x" + 300);
 
-    var ret = baseUrl + params.join("&") + "&key="+InsightsSettings.insights_maps_api;
+    var ret = baseUrl + params.join("&") + "&key=" + InsightsSettings.insights_maps_api;
 
-    /*  var img = document.createElement("img");
+/*  var img = document.createElement("img");
    
    img.src = baseUrl + params.join("&") + "&key=ABQIAAAAV_qfpfUu8uDt3u2UBmjZMBS7bHKUqFE5rBpovpXcTDxFZSYncxRILGNAmXOZzcdCktfOB2SX1-FqVA";
    document.getElementById("insights-image").innerHTML = "";
@@ -107,8 +102,7 @@ function showAddress() {
 
     var address = searchField.value;
     if (geocoder) {
-        geocoder.getLatLng(address,
-        function(point) {
+        geocoder.getLatLng(address, function(point) {
             if (!point) {
                 alert(address + " not found");
             } else {
@@ -117,6 +111,7 @@ function showAddress() {
         });
     }
 }
+
 function init_map() {
     if (GBrowserIsCompatible() && document.getElementById("insights-map")) {
         map = new GMap2(document.getElementById("insights-map"));
@@ -124,35 +119,31 @@ function init_map() {
 
         map.addMapType(G_PHYSICAL_MAP);
         map.addControl(new GLargeMapControl());
-        //	map.addControl(mapTypeControl);
+        //    map.addControl(mapTypeControl);
         map.setMapType(G_NORMAL_MAP);
 
         geocoder = new GClientGeocoder();
-        geocoder.getLatLng(document.getElementById("insights-search").value,
-        function(point) {
+        geocoder.getLatLng(document.getElementById("insights-search").value, function(point) {
             if (!point) {
                 alert(address + " not found");
             } else {
                 map.setCenter(point, 15);
             }
         });
-        //	marker = new GMarker(center, {draggable: true});
-
-        GEvent.addListener(map, "click",
-        function(overlay, latlng) {
+        //    marker = new GMarker(center, {draggable: true});
+        GEvent.addListener(map, "click", function(overlay, latlng) {
             if (latlng && !editingNow) {
                 createPolyAt(latlng);
             }
 
         });
-        
 
-        GEvent.addListener(map, "zoomend",
-        function(oldLevel, newLevel) {
-            
+
+        GEvent.addListener(map, "zoomend", function(oldLevel, newLevel) {
+
         });
 
-        
+
 
     }
 }
