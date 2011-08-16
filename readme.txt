@@ -12,6 +12,7 @@ Insights allows you to quickly access and insert information (links, images, vid
 Insights brings a **powerful** new way to write your blog posts. It increases productivity and at the same time quality of your posts.
 
 Insights performs following functions in real-time:
+
 * Interlink your posts
 * Insert Flickr images
 * Insert Youtube videos
@@ -58,14 +59,9 @@ Updated by <a href="http://www.ramoonus.nl/">Ramoonus</a>.
 4. Using Wikipedia
 5. Searching my Blog and linking to a post
 
-== License ==
-This file is part of Insights.
-
-Insights is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-Insights is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with Insights. If not, see <http://www.gnu.org/licenses/>.
-
 == Frequently Asked Questions ==
 None at the moment
+
+== Upgrade Notice == 
+= 0.3 = 
+* Fixed the not-working previous releases (0.1 and 0.2)
